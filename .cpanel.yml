@@ -1,0 +1,5 @@
+---
+deployment:
+tasks:
+- export DEPLOYPATH=/home/ephemera/UAT_ideasophia
+- /bin/cp -r * $DEPLOYPATH
