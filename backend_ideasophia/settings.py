@@ -91,18 +91,20 @@ SSH_HOST = "milan.id.domainesia.com"
 SSH_USER = "ephemera"
 SSH_PASSWORD = "Ayu20021993"
 
-DB_HOST = 'localhost'
-DB_PORT = 5432
-DB_USER = "ephemera_miko"
+DB_HOST ='localhost'
+DB_PORT = 3306
+DB_USER ="ephemera_miko"
 DB_PASSWORD = "Ayu20021993"
 ssh_tunnel = SSHTunnelForwarder(
     (SSH_HOST,64000),
     ssh_username=SSH_USER,
     ssh_password=SSH_PASSWORD,
-    remote_bind_address=(DB_HOST, DB_PORT)
+    remote_bind_address=(DB_HOST, DB_PORT),
+    local_bind_address=("127.0.0.1",45971)
 )
 print("SSH tunnel established")
 ssh_tunnel.start()
+
 
 DATABASES = {
     #"default": {
@@ -114,10 +116,10 @@ DATABASES = {
         #"PORT":5432,
     #},
     'default': {
-        'ENGINE': 'django.contrib.gis.db.backends.postgis',
-        'HOST': 'localhost',
+        'ENGINE': 'django.db.backends.mysql',
+        'HOST': ssh_tunnel.local_bind_address[0],
         'PORT': ssh_tunnel.local_bind_port,
-        'NAME': "ephemera_ideasophia_uat",
+        'NAME': "ephemera_UATideasophia",
         'USER': "ephemera_miko",
         'PASSWORD': "Ayu20021993",
     },
