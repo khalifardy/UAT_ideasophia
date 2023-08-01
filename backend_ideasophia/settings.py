@@ -100,10 +100,10 @@ ssh_tunnel = SSHTunnelForwarder(
     ssh_username=SSH_USER,
     ssh_password=SSH_PASSWORD,
     remote_bind_address=(DB_HOST, DB_PORT),
-    local_bind_address=("127.0.0.1",45971)
 )
 print("SSH tunnel established")
 ssh_tunnel.start()
+print(ssh_tunnel.local_bind_port)
 
 
 DATABASES = {
@@ -117,7 +117,7 @@ DATABASES = {
     #},
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'HOST': ssh_tunnel.local_bind_address[0],
+        'HOST': '127.0.0.1',
         'PORT': ssh_tunnel.local_bind_port,
         'NAME': "ephemera_UATideasophia",
         'USER': "ephemera_miko",
