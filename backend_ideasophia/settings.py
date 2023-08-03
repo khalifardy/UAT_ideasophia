@@ -50,7 +50,8 @@ INSTALLED_APPS = [
     
 
     #app
-    "apps.admin_login"
+    "apps.admin_login",
+    "apps.inventory"
 ]
 
 SESSION_COOKIE_SECURE = True
