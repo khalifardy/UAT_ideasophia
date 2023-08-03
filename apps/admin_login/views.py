@@ -1,6 +1,7 @@
 from django.shortcuts import render
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate
+from django.core.cache import cache
 
 #django-rest-framework
 from rest_framework.views import APIView
@@ -43,6 +44,26 @@ class Login(APIView):
             return Response(msg, status=status.HTTP_200_OK)
         else:
             return Response({"msg":"username atau password salah"}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class Logout(APIView):
+    
+    "API untuk Logout Internal"
+    permission_classes = (AllowAny,)
+
+    def post(self,request):
+        
+        try:
+            token = request.META['HTTP_AUTHORIZATION']
+            token = token.replace("JWT ", "")
+            cache.set(('token-%s' % token), token, timeout=1200)
+        except Exception as e:
+            return Response({'msg':str(e)},status=status.HTTP_400_BAD_REQUEST)
+        
+        return Response({"status":"OK","message":"Logout Sukses"},status=status.HTTP_200_OK)
+        
+
+
         
 
         

@@ -47,10 +47,14 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
     "rest_framework_simplejwt",
     "corsheaders",
+    
 
     #app
     "apps.admin_login"
 ]
+
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
@@ -219,10 +223,11 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
 STATIC_URL = "static/"
-#STATIC_ROOT = os.path.join(BASE_DIR, "static/")
+STATIC_ROOT = os.path.join(BASE_DIR, "static/")
 
-#MEDIA_URL = "/media/"
+MEDIA_URL = "/media/"
 #MEDIA_ROOT = os.path.join("/home/ephemera/public_html/AIlo/", "media/")
+MEDIA_ROOT = os.path.join("/home/khalifardy/Dokumen/ruang_kerja/code/ideasophia/", "media/")
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
