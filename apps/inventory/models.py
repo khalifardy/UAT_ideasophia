@@ -18,6 +18,9 @@ class Penerbit(models.Model):
         app_label = "inventory"
         verbose_name = "Penerbit"
         verbose_name_plural = "Penerbit"
+    
+    def __str__(self):
+        return self.nama
 
 class Buku(TimeStampedModel):
     isbn = models.CharField(max_length=100, default="")
@@ -26,15 +29,20 @@ class Buku(TimeStampedModel):
     pengarang = models.CharField(max_length=100,default="",blank=True,null=True)
     penerbit = models.ForeignKey(Penerbit,on_delete=models.CASCADE, blank=True, null=True)
     url_image = models.CharField(max_length=500, null=True, blank=True)
+    kategori = models.CharField(max_length=500, null=True, blank=True)
+    sub_kategori = models.CharField(max_length=500, null=True, blank=True)
 
     class Meta:
         app_label = "inventory"
         verbose_name = "Buku"
         verbose_name_plural = "Buku"
+    
+    def __str__(self):
+        return self.judul
 
 class Stock(TimeStampedModel):
     buku = models.ForeignKey(Buku,on_delete=models.CASCADE,null=True, blank=True)
-    jumlah_stock = models.DecimalField(max_digits=20,decimal_places=3)
+    jumlah_stock = models.IntegerField()
     
     
 
@@ -42,4 +50,7 @@ class Stock(TimeStampedModel):
         app_label = "inventory"
         verbose_name = "Stock"
         verbose_name_plural = "Stock"
+    
+    def __str__(self) -> str:
+        return self.buku.judul
 
