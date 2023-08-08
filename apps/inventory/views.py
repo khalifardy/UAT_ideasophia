@@ -15,7 +15,7 @@ from library.auth import IsTokenValid
 
 #models
 from .models import Buku,Penerbit,Stock
-from .serializers import BukuSerializers
+from .serializers import BukuSerializers, StockSerializer
 # Create your views here.
 
 class CrudBuku(APIView):
@@ -24,12 +24,13 @@ class CrudBuku(APIView):
     def post(self,request):
         judul = request.data.get("judul")
         pengarang = request.data.get("pengarang")
-        isbn = request.data.get("isbn")
+        isbn_ = request.data.get("isbn")
         tahun = request.data.get("tahun")
         penerbit = request.data.get("penerbit")
         kategori = request.data.get("kategori",None)
         sub = request.data.get("sub_kategori",None)
         image = request.FILES.get("img",None)
+        stock = request.data.get("stock",None)
 
         path = settings.MEDIA_ROOT + 'inventory/buku/images'
 
@@ -51,48 +52,50 @@ class CrudBuku(APIView):
             id_penerbit = Penerbit.objects.get(nama=penerbit)
             if not image and not kategori and not sub:
                 Buku.objects.create(
-                    isbn=isbn, judul=judul, penerbit=id_penerbit,
+                    isbn=isbn_, judul=judul, penerbit=id_penerbit,
                     pengarang=pengarang,tahun_terbit= tahun
                 )
             elif not kategori and not sub and image:
                 Buku.objects.create(
-                    isbn=isbn, judul=judul, penerbit=id_penerbit,
+                    isbn=isbn_, judul=judul, penerbit=id_penerbit,
                     pengarang=pengarang,tahun_terbit= tahun, url_image=image
                 )
             elif not image and not sub and kategori:
                 Buku.objects.create(
-                    isbn=isbn, judul=judul, penerbit=id_penerbit,
+                    isbn=isbn_, judul=judul, penerbit=id_penerbit,
                     pengarang=pengarang,tahun_terbit= tahun, kategori=kategori
                 )
             elif not image and not kategori and sub:
                 Buku.objects.create(
-                    isbn=isbn, judul=judul, penerbit=id_penerbit,
+                    isbn=isbn_, judul=judul, penerbit=id_penerbit,
                     pengarang=pengarang,tahun_terbit= tahun, sub_kategori=sub
                 )
             elif not image and kategori and sub:
                 Buku.objects.create(
-                    isbn=isbn, judul=judul, penerbit=id_penerbit,
+                    isbn=isbn_, judul=judul, penerbit=id_penerbit,
                     pengarang=pengarang,tahun_terbit= tahun, kategori=kategori,
                     sub_kategori=sub
                 )
             elif not sub and image and kategori :
                 Buku.objects.create(
-                    isbn=isbn, judul=judul, penerbit=id_penerbit,
+                    isbn=isbn_, judul=judul, penerbit=id_penerbit,
                     pengarang=pengarang,tahun_terbit= tahun, kategori=kategori,
                     url_image=upload_path
                 )
             elif not kategori and image and sub :
                 Buku.objects.create(
-                    isbn=isbn, judul=judul, penerbit=id_penerbit,
+                    isbn=isbn_, judul=judul, penerbit=id_penerbit,
                     pengarang=pengarang,tahun_terbit= tahun, sub_kategori=sub,
                     url_image=upload_path
                 )
             else:
                 Buku.objects.create(
-                    isbn=isbn, judul=judul, penerbit=id_penerbit,
+                    isbn=isbn_, judul=judul, penerbit=id_penerbit,
                     pengarang=pengarang,tahun_terbit= tahun, kategori=kategori,
                     url_image=upload_path, sub_kategori=sub
                 )
+            get_id_buku = Buku.objects.get(isbn=isbn_)
+            Stock.objects.create(jumlah_stock=int(stock),buku=get_id_buku)
         except Exception as e:
             return Response({'msg':str(e)},status=status.HTTP_400_BAD_REQUEST)
         
@@ -108,8 +111,8 @@ class CrudBuku(APIView):
         kategori = request.data.get("kategori",None)
         sub = request.data.get("sub_kategori",None)
         image = request.FILES.get("img",None)
-        print(judul)
-        print(isbn)
+        stock = request.data.get("stock",None)
+
 
         try:
             id_buku = Buku.objects.filter(id=int(id_))
@@ -151,6 +154,10 @@ class CrudBuku(APIView):
             if isbn:
                 id_buku.update(isbn=isbn)
             
+            stock_query = Stock.objects.get(buku__id=int(id_))
+            if stock != stock_query.jumlah_stock:
+                Stock.objects.filter(buku__id=int(id_)).update(jumlah_stock=int(stock))
+            
             respon ={"msg":"update sukses"}
             
         except Exception as e:
@@ -164,6 +171,8 @@ class CrudBuku(APIView):
 
         try:
             obj = Buku.objects.get(id=id_buku)
+            obj_stock = Stock.objects.get(buku__id=id_buku)
+            obj_stock.delete()
             obj.delete()
             respon = {"msg":"Buku Berhasil Di hapus"}
         except Exception as e:
@@ -197,31 +206,83 @@ class ViewBuku(APIView,PageNumberPagination):
         query_buku = Buku.objects.all()
 
         if isbn:
-            query_buku=query_buku.filter(isbn=isbn)
+            query_buku=query_buku.filter(isbn__icontains=isbn)
         
         if judul and judul != ('',) :
-            query_buku =query_buku.filter(judul=judul[0])
+            query_buku =query_buku.filter(judul__icontains=judul[0])
         
         if pengarang:
-            query_buku=query_buku.filter(pengarang=pengarang)
+            query_buku=query_buku.filter(pengarang__icontains=pengarang)
         
         if tahun:
             query_buku=query_buku.filter(tahun_terbit=int(tahun))
         
         if penerbit:
-            query_buku=query_buku.filter(penerbit__nama=penerbit)
+            query_buku=query_buku.filter(penerbit__nama__icontains=penerbit)
         
         if kategori:
-            query_buku=query_buku.filter(kategori=kategori)
+            query_buku=query_buku.filter(kategori__icontains=kategori)
         
         if sub:
-            query_buku=query_buku.filter(sub_kategori=sub)
+            query_buku=query_buku.filter(sub_kategori__icontains=sub)
         
         record = self.get_queryset(query_buku)
         serializer =BukuSerializers(record,many=True)
 
         return self.get_paginated_response(serializer.data)
     
+class ViewStock(APIView,PageNumberPagination):
+
+    permission_classes = (IsTokenValid,)
+    page_size = 20
+    max_page_size = 20
+
+    def get_queryset(self,query):
+
+        """
+        fungsi untuk mengolah data/query menjadi halaman (pagination)
+        """
+        return self.paginate_queryset(query, self.request,view=self)
+
+    def post(self,request):
+
+        isbn = request.data.get("isbn",None)
+        judul = request.data.get("judul",None),
+        pengarang = request.data.get("pengarang",None)
+        tahun = request.data.get("tahun",None)
+        penerbit = request.data.get("penerbit",None)
+        kategori = request.data.get("kategori",None)
+        sub = request.data.get("sub_kategori",None)
+
+        query_stock = Stock.objects.all()
+
+        if isbn:
+            query_stock = query_stock.filter(buku__isbn__icontains=isbn)
+        
+        if judul and judul != ('',) :
+            query_stock =query_stock.filter(buku__judul__icontains=judul[0])
+        
+        if pengarang:
+            query_stock = query_stock.filter(buku__pengarang__icontains=pengarang)
+        
+        if tahun:
+            query_stock = query_stock.filter(buku__tahun__terbit=tahun)
+
+        if penerbit:
+            query_stock = query_stock.filter(buku__penerbit__nama__icontains=penerbit)
+        
+        if kategori:
+            query_stock = query_stock.filter(buku__kategori__icontains=kategori)
+        
+        if sub:
+            query_stock = query_stock.filter(buku__sub_kategori__icontains=sub)
+        
+
+        record = self.get_queryset(query_stock)
+        serializer =StockSerializer(record,many=True)
+
+        return self.get_paginated_response(serializer.data)
+        
 
 
 
