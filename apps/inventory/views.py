@@ -8,12 +8,14 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import AllowAny
+from rest_framework.pagination import PageNumberPagination
 
 #library internal
 from library.auth import IsTokenValid
 
 #models
 from .models import Buku,Penerbit,Stock
+from .serializers import BukuSerializers
 # Create your views here.
 
 class CrudBuku(APIView):
@@ -117,13 +119,13 @@ class CrudBuku(APIView):
                 id_buku.update(penerbit=objek_penerbit)
         
             if judul and judul != ('',):
-                id_buku.update(judul=judul)
+                id_buku.update(judul=judul[0])
         
             if pengarang:
                 id_buku.update(pengarang=pengarang)
 
             if tahun:
-                id_buku.update(tahun=tahun)
+                id_buku.update(tahun_terbit=tahun)
 
             if kategori:
                 id_buku.update(kategori=kategori)
@@ -168,6 +170,61 @@ class CrudBuku(APIView):
             respon = {"msg":str(e)}
         
         return Response(respon,status=status.HTTP_200_OK)
+
+class ViewBuku(APIView,PageNumberPagination):
+
+    permission_classes = (IsTokenValid,)
+    page_size = 20
+    max_page_size = 20
+
+    def get_queryset(self,query):
+
+        """
+        fungsi untuk mengolah data/query menjadi halaman (pagination)
+        """
+        return self.paginate_queryset(query, self.request,view=self)
+
+    def post(self,request):
+
+        isbn = request.data.get("isbn",None)
+        judul = request.data.get("judul",None),
+        pengarang = request.data.get("pengarang",None)
+        tahun = request.data.get("tahun",None)
+        penerbit = request.data.get("penerbit",None)
+        kategori = request.data.get("kategori",None)
+        sub = request.data.get("sub_kategori",None)
+
+        query_buku = Buku.objects.all()
+
+        if isbn:
+            query_buku=query_buku.filter(isbn=isbn)
+        
+        if judul and judul != ('',) :
+            query_buku =query_buku.filter(judul=judul[0])
+        
+        if pengarang:
+            query_buku=query_buku.filter(pengarang=pengarang)
+        
+        if tahun:
+            query_buku=query_buku.filter(tahun_terbit=int(tahun))
+        
+        if penerbit:
+            query_buku=query_buku.filter(penerbit__nama=penerbit)
+        
+        if kategori:
+            query_buku=query_buku.filter(kategori=kategori)
+        
+        if sub:
+            query_buku=query_buku.filter(sub_kategori=sub)
+        
+        record = self.get_queryset(query_buku)
+        serializer =BukuSerializers(record,many=True)
+
+        return self.get_paginated_response(serializer.data)
+    
+
+
+
 
 
 
