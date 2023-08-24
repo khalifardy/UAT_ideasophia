@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
+from sshtunnel import SSHTunnelForwarder
 from pathlib import Path
 import os
 from datetime import timedelta, datetime
@@ -27,7 +28,7 @@ SECRET_KEY = "django-insecure-3bo#eiw9ex@+zgkum7bt8c3#1_4x=($1b7ajz$qm4n8_i#0hr8
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["ephemera.cloud",'localhost']
+ALLOWED_HOSTS = ["ephemera.cloud", 'localhost']
 
 
 # Application definition
@@ -47,11 +48,12 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
     "rest_framework_simplejwt",
     "corsheaders",
-    
 
-    #app
+
+    # app
     "apps.admin_login",
-    "apps.inventory"
+    "apps.inventory",
+    "apps.akasia",
 ]
 
 SESSION_COOKIE_SECURE = True
@@ -90,18 +92,17 @@ WSGI_APPLICATION = "backend_ideasophia.wsgi.application"
 
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
-#SSH Koneksi
-from sshtunnel import SSHTunnelForwarder
+# SSH Koneksi
 SSH_HOST = "milan.id.domainesia.com"
 SSH_USER = "ephemera"
 SSH_PASSWORD = "Ayu20021993"
 
-DB_HOST ='localhost'
+DB_HOST = 'localhost'
 DB_PORT = 3306
-DB_USER ="ephemera_miko"
+DB_USER = "ephemera_miko"
 DB_PASSWORD = "Ayu20021993"
 ssh_tunnel = SSHTunnelForwarder(
-    (SSH_HOST,64000),
+    (SSH_HOST, 64000),
     ssh_username=SSH_USER,
     ssh_password=SSH_PASSWORD,
     remote_bind_address=(DB_HOST, DB_PORT),
@@ -112,14 +113,14 @@ print(ssh_tunnel.local_bind_port)
 
 
 DATABASES = {
-    #"default": {
-        #"ENGINE": "django.contrib.gis.db.backends.postgis",
-        #"NAME": "ephemera_ideasophia_uat",
-        #"USER":"ephemera_miko",
-        #"PASSWORD":"Ayu20021993",
-        #"HOST":"localhost",
-        #"PORT":5432,
-    #},
+    # "default": {
+    # "ENGINE": "django.contrib.gis.db.backends.postgis",
+    # "NAME": "ephemera_ideasophia_uat",
+    # "USER":"ephemera_miko",
+    # "PASSWORD":"Ayu20021993",
+    # "HOST":"localhost",
+    # "PORT":5432,
+    # },
     'default': {
         'ENGINE': 'django.db.backends.mysql',
         'HOST': '127.0.0.1',
@@ -227,8 +228,9 @@ STATIC_URL = "static/"
 STATIC_ROOT = os.path.join(BASE_DIR, "static/")
 
 MEDIA_URL = "/media/"
-#MEDIA_ROOT = os.path.join("/home/ephemera/public_html/AIlo/", "media/")
-MEDIA_ROOT = os.path.join("/home/khalifardy/Dokumen/ruang_kerja/code/ideasophia/", "media/")
+# MEDIA_ROOT = os.path.join("/home/ephemera/public_html/AIlo/", "media/")
+MEDIA_ROOT = os.path.join(
+    "/home/khalifardy/Dokumen/ruang_kerja/code/ideasophia/", "media/")
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
